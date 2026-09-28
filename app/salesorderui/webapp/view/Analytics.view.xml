@@ -1,0 +1,36 @@
+<mvc:View
+  controllerName="salesorderui.controller.Analytics"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+  <Page title="{i18n>tabAnalytics}" enableScrolling="true">
+    <headerContent>
+      <Button icon="sap-icon://refresh" tooltip="{i18n>refresh}" press="onRefreshRevenue"/>
+    </headerContent>
+    <content>
+      <Table id="revenueTable" items="{revenue>/rows}" noDataText="{i18n>noOrders}" class="sapUiSmallMargin">
+        <headerToolbar>
+          <Toolbar>
+            <Title text="{i18n>analyticsTitle}"/>
+          </Toolbar>
+        </headerToolbar>
+        <columns>
+          <Column><Text text="{i18n>status}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>orderCount}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>totalAmount}"/></Column>
+          <Column width="30%"><Text text="{i18n>totalAmount}"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ObjectStatus text="{revenue>status}" state="{path:'revenue>status', formatter:'.formatter.statusState'}"/>
+              <Text text="{revenue>orderCount}"/>
+              <ObjectNumber number="{revenue>totalAmount}"/>
+              <ProgressIndicator percentValue="{revenue>share}" displayValue=" " state="Success"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

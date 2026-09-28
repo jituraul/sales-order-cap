@@ -1,0 +1,51 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+  <Dialog title="{i18n>createOrderDeep}" contentWidth="42rem" busy="{ui>/busy}">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" class="sapUiSmallMargin">
+        <Label text="{i18n>customer}"/>
+        <ComboBox
+          items="{path: '/Customers', parameters: {$select: 'ID,name'}}"
+          selectedKey="{customer_ID}">
+          <core:Item key="{ID}" text="{name}"/>
+        </ComboBox>
+        <Label text="{i18n>orderDate}"/>
+        <DatePicker value="{orderDate}"/>
+        <Label text="{i18n>currency}"/>
+        <ComboBox
+          items="{path: '/Currencies', parameters: {$select: 'code,name'}}"
+          selectedKey="{currency_code}">
+          <core:Item key="{code}" text="{name}"/>
+        </ComboBox>
+        <Label text="{i18n>note}"/>
+        <TextArea value="{note}" rows="2" width="100%"/>
+      </f:SimpleForm>
+      <Toolbar>
+        <Title text="{i18n>items}"/>
+        <ToolbarSpacer/>
+        <Button text="{i18n>addItem}" icon="sap-icon://add" press="onAddDeepCreateItem"/>
+      </Toolbar>
+      <Table id="deepCreateItemsTable" items="{path: 'items', parameters: {$$updateGroupId: 'manage'}}" noDataText="{i18n>noItems}">
+        <columns>
+          <Column><Text text="{i18n>product}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>quantity}"/></Column>
+          <Column/>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{product/name}"/>
+              <Text text="{quantity}"/>
+              <Button icon="sap-icon://delete" type="Transparent" press="onRemoveDeepCreateItem"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <beginButton>
+      <Button text="{i18n>create}" type="Emphasized" press="onConfirmCreateOrderDeep"/>
+    </beginButton>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onCancelCreateOrderDeep"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

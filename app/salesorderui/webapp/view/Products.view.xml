@@ -1,0 +1,43 @@
+<mvc:View
+  controllerName="salesorderui.controller.Products"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+  <Page title="{i18n>tabProducts}" enableScrolling="true">
+    <subHeader>
+      <Toolbar>
+        <SearchField width="16rem" search="onSearchProducts"/>
+        <ToolbarSpacer/>
+        <Button text="{i18n>lowStock}" icon="sap-icon://alert" press="onShowLowStock"/>
+        <Button text="{i18n>create}" type="Emphasized" icon="sap-icon://add" press="onCreateProduct"/>
+        <Button text="{i18n>edit}" icon="sap-icon://edit" press="onEditProduct" enabled="{= ${ui>/selected} !== null }"/>
+        <Button text="{i18n>delete}" icon="sap-icon://delete" press="onDeleteProduct" enabled="{= ${ui>/selected} !== null }"/>
+      </Toolbar>
+    </subHeader>
+    <content>
+      <Table
+        id="productsTable"
+        items="{path: '/Products', parameters: {$orderby: 'name'}}"
+        mode="SingleSelectMaster"
+        selectionChange="onProductSelectionChange"
+        noDataText="{i18n>noProducts}">
+        <columns>
+          <Column><Text text="{i18n>name}"/></Column>
+          <Column><Text text="{i18n>sku}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>stock}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>price}"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{name}"/>
+              <Text text="{sku}"/>
+              <ObjectNumber number="{stock}"/>
+              <ObjectNumber number="{price}" unit="{currency_code}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

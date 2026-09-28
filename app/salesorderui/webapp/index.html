@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Order Management</title>
+  <script
+    src="https://sdk.openui5.org/resources/sap-ui-core.js"
+    data-sap-ui-theme="sap_horizon"
+    data-sap-ui-resourceroots='{"salesorderui": "./"}'
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-async="true"
+    data-sap-ui-frameOptions="trusted"
+    data-sap-ui-libs="sap.m, sap.ui.core, sap.f, sap.ui.layout"
+  ></script>
+  <script>
+    sap.ui.getCore().attachInit(function () {
+      sap.ui.require(["sap/ui/core/ComponentContainer"], function (ComponentContainer) {
+        new ComponentContainer({
+          name: "salesorderui",
+          settings: { id: "salesorderui" },
+          async: true
+        }).placeAt("content");
+      });
+    });
+  </script>
+</head>
+<body class="sapUiBody" id="content"></body>
+</html>

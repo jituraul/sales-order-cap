@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog title="{i18n>lowStock}" contentWidth="34rem">
+    <content>
+      <Toolbar class="sapUiSmallMargin">
+        <Label text="{i18n>threshold}" labelFor="lowStockThreshold" class="sapUiTinyMarginEnd"/>
+        <StepInput id="lowStockThreshold" min="0" value="{lowStock>/threshold}" width="8rem"/>
+        <ToolbarSpacer/>
+        <Button text="{i18n>search}" type="Emphasized" press="onSearchLowStock"/>
+      </Toolbar>
+      <Table items="{lowStock>/results}" noDataText="{i18n>noProducts}">
+        <columns>
+          <Column><Text text="{i18n>name}"/></Column>
+          <Column><Text text="{i18n>sku}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>stock}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>price}"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{lowStock>name}"/>
+              <Text text="{lowStock>sku}"/>
+              <ObjectNumber number="{lowStock>stock}"/>
+              <ObjectNumber number="{lowStock>price}" unit="{lowStock>currency_code}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onCloseLowStockDialog"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

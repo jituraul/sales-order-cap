@@ -1,0 +1,29 @@
+<mvc:View
+  controllerName="salesorderui.controller.App"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  displayBlock="true"
+  height="100%">
+  <App id="app">
+    <Page id="shellPage" title="{i18n>appTitle}" enableScrolling="false">
+      <content>
+        <IconTabBar id="iconTabBar" expanded="true" stretchContentHeight="true">
+          <items>
+            <IconTabFilter key="orders" text="{i18n>tabOrders}" icon="sap-icon://sales-order">
+              <mvc:XMLView viewName="salesorderui.view.Orders"/>
+            </IconTabFilter>
+            <IconTabFilter key="customers" text="{i18n>tabCustomers}" icon="sap-icon://customer">
+              <mvc:XMLView viewName="salesorderui.view.Customers"/>
+            </IconTabFilter>
+            <IconTabFilter key="products" text="{i18n>tabProducts}" icon="sap-icon://product">
+              <mvc:XMLView viewName="salesorderui.view.Products"/>
+            </IconTabFilter>
+            <IconTabFilter key="analytics" text="{i18n>tabAnalytics}" icon="sap-icon://business-objects-experience">
+              <mvc:XMLView viewName="salesorderui.view.Analytics"/>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
+      </content>
+    </Page>
+  </App>
+</mvc:View>

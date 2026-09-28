@@ -1,0 +1,37 @@
+{
+  "name": "sales-order-cap",
+  "version": "1.0.0",
+  "description": "SAP CAP project implementing a Sales Order scenario with CRUD, custom actions and functions",
+  "repository": "<your-repo-url>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^8",
+    "@sap/cds-dk": "^8",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1",
+    "chai": "^4",
+    "chai-as-promised": "^7",
+    "chai-subset": "^1",
+    "jest": "^29"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "build": "cds build --production",
+    "deploy": "cds deploy",
+    "test": "jest"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      }
+    }
+  }
+}

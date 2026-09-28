@@ -1,0 +1,43 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+  <Dialog title="{i18n>createOrderAction}" contentWidth="42rem">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" class="sapUiSmallMargin">
+        <Label text="{i18n>customer}"/>
+        <ComboBox
+          items="{path: '/Customers', parameters: {$select: 'ID,name'}}"
+          selectedKey="{quick>/customer}">
+          <core:Item key="{ID}" text="{name}"/>
+        </ComboBox>
+        <Label text="{i18n>note}"/>
+        <TextArea value="{quick>/note}" rows="2" width="100%"/>
+      </f:SimpleForm>
+      <Toolbar>
+        <Title text="{i18n>items}"/>
+        <ToolbarSpacer/>
+        <Button text="{i18n>addItem}" icon="sap-icon://add" press="onQuickAddItem"/>
+      </Toolbar>
+      <Table items="{quick>/items}" noDataText="{i18n>noItems}">
+        <columns>
+          <Column><Text text="{i18n>product}"/></Column>
+          <Column hAlign="End"><Text text="{i18n>quantity}"/></Column>
+          <Column/>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{quick>productLabel}"/>
+              <Text text="{quick>quantity}"/>
+              <Button icon="sap-icon://delete" type="Transparent" press="onQuickRemoveItem"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <beginButton>
+      <Button text="{i18n>create}" type="Emphasized" press="onConfirmCreateOrderAction"/>
+    </beginButton>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onCancelCreateOrderAction"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

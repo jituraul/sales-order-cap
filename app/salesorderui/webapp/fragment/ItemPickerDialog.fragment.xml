@@ -1,0 +1,25 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog title="{i18n>addItem}" contentWidth="24rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <Label text="{i18n>product}" labelFor="itemPickerProduct"/>
+        <ComboBox
+          id="itemPickerProduct"
+          items="{path: '/Products', parameters: {$select: 'ID,name,price,currency_code'}}"
+          selectedKey="{picker>/productID}"
+          change="onItemPickerProductChange"
+          class="sapUiSmallMarginBottom">
+          <core:Item key="{ID}" text="{name}"/>
+        </ComboBox>
+        <Label text="{i18n>quantity}" labelFor="itemPickerQty"/>
+        <StepInput id="itemPickerQty" min="1" value="{picker>/quantity}"/>
+      </VBox>
+    </content>
+    <beginButton>
+      <Button text="{i18n>ok}" type="Emphasized" press="onItemPickerOk"/>
+    </beginButton>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onItemPickerCancel"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

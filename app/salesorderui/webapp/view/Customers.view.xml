@@ -1,0 +1,44 @@
+<mvc:View
+  controllerName="salesorderui.controller.Customers"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  height="100%">
+  <Page title="{i18n>tabCustomers}" enableScrolling="true">
+    <subHeader>
+      <Toolbar>
+        <SearchField width="16rem" search="onSearchCustomers"/>
+        <ToolbarSpacer/>
+        <Button text="{i18n>create}" type="Emphasized" icon="sap-icon://add" press="onCreateCustomer"/>
+        <Button text="{i18n>edit}" icon="sap-icon://edit" press="onEditCustomer" enabled="{= ${ui>/selected} !== null }"/>
+        <Button text="{i18n>delete}" icon="sap-icon://delete" press="onDeleteCustomer" enabled="{= ${ui>/selected} !== null }"/>
+      </Toolbar>
+    </subHeader>
+    <content>
+      <Table
+        id="customersTable"
+        items="{path: '/Customers', parameters: {$orderby: 'name'}}"
+        mode="SingleSelectMaster"
+        selectionChange="onCustomerSelectionChange"
+        noDataText="{i18n>noCustomers}">
+        <columns>
+          <Column><Text text="{i18n>name}"/></Column>
+          <Column><Text text="{i18n>email}"/></Column>
+          <Column><Text text="{i18n>phone}"/></Column>
+          <Column><Text text="{i18n>city}"/></Column>
+          <Column><Text text="{i18n>country}"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{name}"/>
+              <Text text="{email}"/>
+              <Text text="{phone}"/>
+              <Text text="{city}"/>
+              <Text text="{country}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

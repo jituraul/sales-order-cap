@@ -1,0 +1,11 @@
+node_modules/
+gen/
+*.db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.cdsrc-private.json
+dist/
+.DS_Store
+*.log
+.claude/

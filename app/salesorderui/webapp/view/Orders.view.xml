@@ -1,0 +1,133 @@
+<mvc:View
+  controllerName="salesorderui.controller.Orders"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.ui.layout.form"
+  height="100%">
+  <NavContainer id="ordersNavContainer">
+    <pages>
+
+      <Page id="ordersListPage" title="{i18n>tabOrders}" enableScrolling="true">
+        <headerContent>
+          <Button icon="sap-icon://refresh" tooltip="{i18n>refresh}" press="onRefreshOrders"/>
+        </headerContent>
+        <subHeader>
+          <Toolbar>
+            <SearchField id="orderSearchField" width="16rem" search="onSearchOrders" placeholder="{i18n>searchOrders}"/>
+            <ToolbarSpacer/>
+            <Button text="{i18n>createOrderDeep}" type="Emphasized" icon="sap-icon://create" press="onCreateOrderDeep"/>
+            <Button text="{i18n>createOrderAction}" icon="sap-icon://action" press="onCreateOrderAction"/>
+            <Button text="{i18n>delete}" icon="sap-icon://delete" press="onDeleteOrder" enabled="{= ${ui>/selectedOrder} !== null }"/>
+          </Toolbar>
+        </subHeader>
+        <content>
+          <Table
+            id="ordersTable"
+            items="{path: '/SalesOrders', parameters: {$filter: 'IsActiveEntity eq true', $expand: 'customer', $orderby: 'orderNo desc'}}"
+            mode="SingleSelectMaster"
+            selectionChange="onOrderSelectionChange"
+            noDataText="{i18n>noOrders}">
+            <columns>
+              <Column><Text text="{i18n>orderNo}"/></Column>
+              <Column><Text text="{i18n>customer}"/></Column>
+              <Column><Text text="{i18n>status}"/></Column>
+              <Column><Text text="{i18n>orderDate}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>totalAmount}"/></Column>
+              <Column hAlign="Center"><Text text="{i18n>draft}"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Navigation" press="onOrderPress">
+                <cells>
+                  <Text text="{orderNo}"/>
+                  <Text text="{customer/name}"/>
+                  <ObjectStatus text="{status}" state="{path:'status', formatter:'.formatter.statusState'}"/>
+                  <Text text="{orderDate}"/>
+                  <ObjectNumber number="{totalAmount}" unit="{currency_code}"/>
+                  <core:Icon src="sap-icon://request" visible="{= ${HasDraftEntity} === true }" color="Critical"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </Page>
+
+      <Page id="orderDetailPage" title="{i18n>orderDetails}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
+        <content>
+          <MessageStrip
+            text="{i18n>editingDraftHint}"
+            type="Warning"
+            showIcon="true"
+            visible="{ui>/editing}"
+            class="sapUiSmallMargin"/>
+
+          <Toolbar class="sapUiSmallMarginBottom">
+            <Button text="{i18n>edit}" icon="sap-icon://edit" press="onEditOrder" visible="{= !${ui>/editing} }"/>
+            <Button text="{i18n>save}" type="Emphasized" icon="sap-icon://save" press="onSaveOrder" visible="{ui>/editing}"/>
+            <Button text="{i18n>discard}" icon="sap-icon://undo" press="onDiscardOrder" visible="{ui>/editing}"/>
+            <ToolbarSpacer/>
+            <Button text="{i18n>confirmOrder}" icon="sap-icon://accept" press="onConfirmOrder" visible="{= !${ui>/editing} }"/>
+            <Button text="{i18n>cancelOrder}" icon="sap-icon://decline" press="onCancelOrder" visible="{= !${ui>/editing} }"/>
+            <Button text="{i18n>addItemAction}" icon="sap-icon://action" press="onAddItemAction" visible="{= !${ui>/editing} }"/>
+            <Button text="{i18n>getSummary}" icon="sap-icon://sum" press="onGetSummary" visible="{= !${ui>/editing} }"/>
+            <Button text="{i18n>delete}" icon="sap-icon://delete" press="onDeleteOrderDetail" visible="{= !${ui>/editing} }"/>
+          </Toolbar>
+
+          <f:SimpleForm editable="{ui>/editing}" layout="ResponsiveGridLayout" class="sapUiSmallMargin">
+            <Label text="{i18n>orderNo}"/>
+            <Text text="{orderNo}"/>
+            <Label text="{i18n>status}"/>
+            <ObjectStatus text="{status}" state="{path:'status', formatter:'.formatter.statusState'}"/>
+            <Label text="{i18n>customer}"/>
+            <ComboBox
+              items="{path: '/Customers', parameters: {$select: 'ID,name'}}"
+              selectedKey="{customer_ID}"
+              enabled="{ui>/editing}">
+              <core:Item key="{ID}" text="{name}"/>
+            </ComboBox>
+            <Label text="{i18n>orderDate}"/>
+            <DatePicker value="{orderDate}" editable="{ui>/editing}"/>
+            <Label text="{i18n>currency}"/>
+            <ComboBox
+              items="{path: '/Currencies', parameters: {$select: 'code,name'}}"
+              selectedKey="{currency_code}"
+              enabled="{ui>/editing}">
+              <core:Item key="{code}" text="{name}"/>
+            </ComboBox>
+            <Label text="{i18n>note}"/>
+            <TextArea value="{note}" rows="2" width="100%" editable="{ui>/editing}"/>
+            <Label text="{i18n>totalAmount}"/>
+            <ObjectNumber number="{totalAmount}" unit="{currency_code}"/>
+          </f:SimpleForm>
+
+          <Toolbar>
+            <Title text="{i18n>items}"/>
+            <ToolbarSpacer/>
+            <Button text="{i18n>addItem}" icon="sap-icon://add" press="onAddDraftItem" visible="{ui>/editing}"/>
+          </Toolbar>
+          <Table id="orderItemsTable" items="{path: 'items', parameters: {$expand: 'product'}}" noDataText="{i18n>noItems}">
+            <columns>
+              <Column><Text text="{i18n>product}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>quantity}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>unitPrice}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>netAmount}"/></Column>
+              <Column visible="{ui>/editing}"/>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <Text text="{product/name}"/>
+                  <Input value="{quantity}" type="Number" editable="{ui>/editing}" change="onQuantityChange"/>
+                  <ObjectNumber number="{unitPrice}" unit="{product/currency_code}"/>
+                  <ObjectNumber number="{netAmount}" unit="{product/currency_code}"/>
+                  <Button icon="sap-icon://delete" type="Transparent" press="onRemoveDraftItem" visible="{ui>/editing}"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </Page>
+
+    </pages>
+  </NavContainer>
+</mvc:View>

@@ -1,0 +1,16 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog title="{i18n>cancelOrder}" contentWidth="24rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <Label text="{i18n>cancelReason}"/>
+        <TextArea id="cancelReasonInput" rows="3" width="100%" liveChange="onCancelReasonChange"/>
+      </VBox>
+    </content>
+    <beginButton>
+      <Button text="{i18n>ok}" type="Emphasized" press="onConfirmCancelOrder"/>
+    </beginButton>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onCloseCancelDialog"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>
