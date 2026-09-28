@@ -2,7 +2,7 @@
   "name": "sales-order-cap",
   "version": "1.0.0",
   "description": "SAP CAP project implementing a Sales Order scenario with CRUD, custom actions and functions",
-  "repository": "<your-repo-url>",
+  "repository": "https://github.com/jituraul/sales-order-cap",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
