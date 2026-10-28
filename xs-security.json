@@ -1,0 +1,27 @@
+{
+  "xsappname": "sales-order-cap",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.SalesUser",
+      "description": "Work with sales orders"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "SalesUser",
+      "description": "Sales order user",
+      "scope-references": ["$XSAPPNAME.SalesUser"]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "SalesOrderUser",
+      "description": "Access to the Sales Order app",
+      "role-template-references": ["$XSAPPNAME.SalesUser"]
+    }
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": ["https://*.hana.ondemand.com/**"]
+  }
+}

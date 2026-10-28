@@ -30,9 +30,11 @@ sap.ui.define([
     onCreateCustomer: function () {
       var oModel = this.getView().getModel();
       this._oNewBinding = oModel.bindList("/Customers", undefined, [], [], { $$updateGroupId: GROUP });
-      var oContext = this._oNewBinding.create({
+      /** @type {Object<any>} */
+      var oInitialData = {
         name: "", email: "", phone: "", country: "", city: "", street: "", postalCode: ""
-      });
+      };
+      var oContext = this._oNewBinding.create(oInitialData);
       this._bNew = true;
       this._openDialog(oContext, false);
     },

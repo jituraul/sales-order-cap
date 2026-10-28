@@ -1,0 +1,75 @@
+_schema-version: '3.1'
+ID: sales-order-cap
+version: 1.0.0
+description: Sales Order CAP app with SAPUI5 frontend
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install
+        - npx cds build --production
+        - npm run build:ui
+
+modules:
+  # CAP Node.js service
+  - name: sales-order-cap-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 256M
+    build-parameters:
+      builder: npm
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: sales-order-cap-db
+      - name: sales-order-cap-auth
+
+  # Deploys the CDS model and CSV data to the HDI container
+  - name: sales-order-cap-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: sales-order-cap-db
+
+  # Approuter: serves the UI5 app and proxies /sales to the service
+  - name: sales-order-cap-approuter
+    type: approuter.nodejs
+    path: app/router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: sales-order-cap-auth
+
+resources:
+  - name: sales-order-cap-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+
+  - name: sales-order-cap-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: sales-order-cap-${org}-${space}
+        tenant-mode: dedicated

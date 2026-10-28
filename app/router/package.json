@@ -1,0 +1,15 @@
+{
+  "name": "sales-order-cap-approuter",
+  "version": "1.0.0",
+  "description": "Application router for the Sales Order CAP app",
+  "private": true,
+  "dependencies": {
+    "@sap/approuter": "^16"
+  },
+  "engines": {
+    "node": "^20 || ^22"
+  },
+  "scripts": {
+    "start": "node node_modules/@sap/approuter/approuter.js"
+  }
+}

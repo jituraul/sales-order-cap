@@ -9,3 +9,8 @@ dist/
 .DS_Store
 *.log
 .claude/
+mta_archives/
+.mta/
+*.mtar
+app/router/resources/
+default-env.json

@@ -5,13 +5,19 @@
   "repository": "https://github.com/jituraul/sales-order-cap",
   "license": "UNLICENSED",
   "private": true,
+  "engines": {
+    "node": "^20 || ^22"
+  },
   "dependencies": {
+    "@cap-js/hana": "^1",
     "@sap/cds": "^8",
-    "@sap/cds-dk": "^8",
+    "@sap/xssec": "^4",
     "express": "^4"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^8",
+    "axios": "^1.21.0",
     "chai": "^4",
     "chai-as-promised": "^7",
     "chai-subset": "^1",
@@ -21,16 +27,26 @@
     "start": "cds-serve",
     "watch": "cds watch",
     "build": "cds build --production",
+    "build:ui": "rm -rf app/router/resources && cp -R app/salesorderui/webapp app/router/resources",
+    "build:mta": "mbt build",
+    "deploy:cf": "cf deploy mta_archives/sales-order-cap_1.0.0.mtar",
     "deploy": "cds deploy",
     "test": "jest"
   },
   "cds": {
     "requires": {
-      "db": {
-        "kind": "sqlite",
-        "credentials": {
-          "url": "db.sqlite"
-        }
+      "[development]": {
+        "db": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
+        },
+        "auth": "dummy"
+      },
+      "[production]": {
+        "db": "hana",
+        "auth": "xsuaa"
       }
     }
   }

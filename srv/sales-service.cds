@@ -4,7 +4,7 @@ using sales from '../db/schema';
  * SalesService — the main OData V4 service for the Sales Order scenario.
  * Provides full CRUD on all entities plus bound/unbound actions and functions.
  */
-service SalesService @(path: '/sales') {
+service SalesService @(path: '/sales', requires: 'SalesUser') {
 
   // ---------- CRUD-enabled projections ----------
 

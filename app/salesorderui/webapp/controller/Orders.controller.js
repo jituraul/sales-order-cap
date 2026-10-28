@@ -75,7 +75,6 @@ sap.ui.define([
     // ---------------------------------------------------------------
 
     _showOrderDetail: function (oContext) {
-      this._oActiveContext = oContext;
       var oUi = this.getView().getModel("ui");
       oUi.setProperty("/editing", false);
       this.byId("orderDetailPage").setBindingContext(oContext);
@@ -93,14 +92,16 @@ sap.ui.define([
     onCreateOrderDeep: function () {
       var oModel = this.getView().getModel();
       this._oDeepCreateBinding = oModel.bindList("/SalesOrders", undefined, [], [], { $$updateGroupId: GROUP });
-      var oNewContext = this._oDeepCreateBinding.create({
+      /** @type {Object<any>} */
+      var oInitialData = {
         note: "",
         orderDate: new Date().toISOString().slice(0, 10)
-      });
+      };
+      var oNewContext = this._oDeepCreateBinding.create(oInitialData);
       this._oNewOrderContext = oNewContext;
       this._bDeepCreateSubmitted = false;
 
-      this.loadFragment({ name: "salesorderui.fragment.CreateOrderDialog" }).then(function (oDialog) {
+      this._loadDialog("salesorderui.fragment.CreateOrderDialog").then(function (oDialog) {
         this._oCreateOrderDialog = oDialog;
         oDialog.setModel(this.getView().getModel("ui"), "ui");
         oDialog.setBindingContext(oNewContext);
@@ -123,7 +124,9 @@ sap.ui.define([
     },
 
     onRemoveDeepCreateItem: function (oEvent) {
-      oEvent.getSource().getBindingContext().delete();
+      /** @type {sap.ui.model.odata.v4.Context} */
+      var oContext = oEvent.getSource().getBindingContext();
+      oContext.delete();
     },
 
     onConfirmCreateOrderDeep: function () {
@@ -165,7 +168,7 @@ sap.ui.define([
 
     onCreateOrderAction: function () {
       this._oQuickCreateModel = new JSONModel({ customer: null, note: "", items: [] });
-      this.loadFragment({ name: "salesorderui.fragment.QuickCreateOrderDialog" }).then(function (oDialog) {
+      this._loadDialog("salesorderui.fragment.QuickCreateOrderDialog").then(function (oDialog) {
         this._oQuickCreateDialog = oDialog;
         oDialog.setModel(this._oQuickCreateModel, "quick");
         oDialog.open();
@@ -220,6 +223,7 @@ sap.ui.define([
 
     onEditOrder: function () {
       var oModel = this.getView().getModel();
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oActiveContext = this.byId("orderDetailPage").getBindingContext();
       var oEdit = oModel.bindContext("SalesService.draftEdit(...)", oActiveContext);
       oEdit.setParameter("PreserveChanges", false);
@@ -234,6 +238,7 @@ sap.ui.define([
 
     onSaveOrder: function () {
       var oModel = this.getView().getModel();
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oDraftContext = this.byId("orderDetailPage").getBindingContext();
       var oActivate = oModel.bindContext("SalesService.draftActivate(...)", oDraftContext);
 
@@ -247,6 +252,7 @@ sap.ui.define([
     },
 
     onDiscardOrder: function () {
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oDraftContext = this.byId("orderDetailPage").getBindingContext();
       MessageBox.confirm(this._i18n("confirmDiscard"), {
         onClose: function (sAction) {
@@ -277,6 +283,7 @@ sap.ui.define([
     },
 
     onRemoveDraftItem: function (oEvent) {
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = oEvent.getSource().getBindingContext();
       oContext.delete()
         .then(this._refreshOrderTotal.bind(this))
@@ -288,18 +295,22 @@ sap.ui.define([
       // the order is saved (draftActivate) - see the note in sales-service.js.
       // Recompute netAmount optimistically here so the row looks right while
       // still editing; requestSideEffects is a best-effort re-sync on top.
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = oEvent.getSource().getBindingContext();
       var fUnitPrice = oContext.getProperty("unitPrice");
       var iQuantity = oContext.getProperty("quantity");
       if (fUnitPrice != null && iQuantity != null) {
         oContext.setProperty("netAmount", fUnitPrice * iQuantity);
       }
-      oContext.requestSideEffects(["unitPrice", "netAmount"])
+      /** @type {Array<(sap.ui.model.odata.v4.ts.NavigationPropertyPathExpression|sap.ui.model.odata.v4.ts.PropertyPathExpression|string)>} */
+      var aSideEffects = ["unitPrice", "netAmount"];
+      oContext.requestSideEffects(aSideEffects)
         .then(this._refreshOrderTotal.bind(this))
         .catch(this._error.bind(this));
     },
 
     _refreshOrderTotal: function () {
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = this.byId("orderDetailPage").getBindingContext();
       if (oContext) {
         // Optimistic client-side total (server only finalizes it on Save).
@@ -308,7 +319,9 @@ sap.ui.define([
           return sum + (Number(c.getProperty("netAmount")) || 0);
         }, 0);
         oContext.setProperty("totalAmount", fTotal);
-        return oContext.requestSideEffects(["totalAmount"]).catch(function () {});
+        /** @type {Array<(sap.ui.model.odata.v4.ts.NavigationPropertyPathExpression|sap.ui.model.odata.v4.ts.PropertyPathExpression|string)>} */
+        var aSideEffects = ["totalAmount"];
+        return oContext.requestSideEffects(aSideEffects).catch(function () {});
       }
       return Promise.resolve();
     },
@@ -323,8 +336,9 @@ sap.ui.define([
 
     onCancelOrder: function () {
       this._sCancelReason = "";
-      this.loadFragment({ name: "salesorderui.fragment.CancelOrderDialog" }).then(function (oDialog) {
+      this._loadDialog("salesorderui.fragment.CancelOrderDialog").then(function (oDialog) {
         this._oCancelDialog = oDialog;
+        this.byId("cancelReasonInput").setValue("");
         oDialog.open();
       }.bind(this));
     },
@@ -356,6 +370,7 @@ sap.ui.define([
 
     onGetSummary: function () {
       var oModel = this.getView().getModel();
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = this.byId("orderDetailPage").getBindingContext();
       var oOp = oModel.bindContext("SalesService.getSummary(...)", oContext);
 
@@ -372,6 +387,7 @@ sap.ui.define([
     },
 
     onDeleteOrderDetail: function () {
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = this.byId("orderDetailPage").getBindingContext();
       MessageBox.confirm(this._i18n("confirmDeleteOrder"), {
         onClose: function (sAction) {
@@ -384,8 +400,14 @@ sap.ui.define([
       });
     },
 
+    /**
+     * @param {string} sAction qualified action path, e.g. "SalesService.confirm(...)"
+     * @param {object} [mParams] action parameters
+     * @returns {Promise} resolves when the action has run
+     */
     _executeBoundAction: function (sAction, mParams) {
       var oModel = this.getView().getModel();
+      /** @type {sap.ui.model.odata.v4.Context} */
       var oContext = this.byId("orderDetailPage").getBindingContext();
       var oOp = oModel.bindContext(sAction, oContext);
       if (mParams) {
@@ -402,7 +424,7 @@ sap.ui.define([
     // ---------------------------------------------------------------
 
     _pickProductAndQuantity: function () {
-      return this.loadFragment({ name: "salesorderui.fragment.ItemPickerDialog" }).then(function (oDialog) {
+      return this._loadDialog("salesorderui.fragment.ItemPickerDialog").then(function (oDialog) {
         this._oItemPickerDialog = oDialog;
         return new Promise(function (resolve) {
           this._fnItemPickerResolve = resolve;
@@ -445,6 +467,15 @@ sap.ui.define([
     // ---------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------
+
+    // Fragments with control IDs can only be loaded once per view, so cache them.
+    _loadDialog: function (sName) {
+      this._mDialogs = this._mDialogs || {};
+      if (!this._mDialogs[sName]) {
+        this._mDialogs[sName] = this.loadFragment({ name: sName });
+      }
+      return this._mDialogs[sName];
+    },
 
     _i18n: function (sKey) {
       return this._oBundle ? this._oBundle.getText(sKey) : sKey;
