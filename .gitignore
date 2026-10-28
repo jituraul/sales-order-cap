@@ -14,3 +14,4 @@ mta_archives/
 *.mtar
 app/router/resources/
 default-env.json
+*.code-workspace
