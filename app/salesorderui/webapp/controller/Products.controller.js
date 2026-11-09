@@ -30,9 +30,9 @@ sap.ui.define([
     onCreateProduct: function () {
       var oModel = this.getView().getModel();
       this._oNewBinding = oModel.bindList("/Products", undefined, [], [], { $$updateGroupId: GROUP });
-      var oContext = this._oNewBinding.create({
-        name: "", description: "", sku: "", stock: 0, price: "0.00"
-      });
+      /** @type {Object<any>} */
+      var oInitialData = { name: "", description: "", sku: "", stock: 0, price: "0.00" };
+      var oContext = this._oNewBinding.create(oInitialData);
       this._bNew = true;
       this._openDialog(oContext, false);
     },

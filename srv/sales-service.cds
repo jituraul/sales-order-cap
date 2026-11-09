@@ -38,6 +38,10 @@ service SalesService @(path: '/sales', requires: 'SalesUser') {
 
   entity OrderItems as projection on sales.OrderItems;
 
+  // Files attached to an order. Create the row (metadata) with POST, then
+  // upload the binary with PUT /Attachments(<ID>)/content.
+  entity Attachments as projection on sales.Attachments;
+
   // ---------- Unbound (service-level) actions & functions ----------
 
   // Create a complete order (header + items) in one call.

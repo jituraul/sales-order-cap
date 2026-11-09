@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { GET, POST, PATCH, DELETE, expect } = cds.test(__dirname + '/..');
+const { GET, POST, PATCH, PUT, DELETE, expect } = cds.test(__dirname + '/..');
 
 describe('SalesService', () => {
   const C1 = '11111111-1111-1111-1111-111111111111';
@@ -53,5 +53,28 @@ describe('SalesService', () => {
   it('FUNCTION (unbound) - getLowStockProducts respects threshold', async () => {
     const { data } = await GET`/sales/getLowStockProducts(threshold=10)`;
     expect(data.value.every((p) => p.stock < 10)).to.be.true;
+  });
+
+  it('ATTACHMENTS - upload, download and delete with order', async () => {
+    const { data: order } = await POST(`/sales/createOrder`, { customer: C1, note: 'with file', items: [] });
+    const { data: att } = await POST(`/sales/Attachments`, {
+      order_ID: order.ID, fileName: 'hello.txt', mediaType: 'text/plain', size: 5
+    });
+    await PUT(`/sales/Attachments(${att.ID})/content`, 'hello', {
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const res = await GET(`/sales/Attachments(${att.ID})/content`);
+    expect(res.data).to.equal('hello');
+    expect(res.headers['content-disposition']).to.contain('hello.txt');
+
+    await DELETE(`/sales/SalesOrders(ID=${order.ID},IsActiveEntity=true)`);
+    const { data: left } = await GET(`/sales/Attachments?$filter=order_ID eq ${order.ID}`);
+    expect(left.value.length).to.equal(0);
+  });
+
+  it('ATTACHMENTS - rejects unknown order', async () => {
+    await expect(POST(`/sales/Attachments`, {
+      order_ID: '00000000-0000-0000-0000-000000000000', fileName: 'x.txt'
+    })).to.be.rejectedWith(/404|not found/i);
   });
 });

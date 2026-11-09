@@ -54,6 +54,7 @@ entity SalesOrders : cuid, managed {
   // Computed / derived totals
   totalAmount  : Decimal(15, 2) default 0;
   note         : String(1000);
+  attachments  : Association to many Attachments on attachments.order = $self;
 }
 
 /**
@@ -65,4 +66,23 @@ entity OrderItems : cuid {
   quantity   : Integer not null default 1;
   unitPrice  : Decimal(11, 2);
   netAmount  : Decimal(15, 2);
+}
+
+/**
+ * Files attached to a Sales Order (stored in the database).
+ * Kept as an association rather than a composition so files can be
+ * uploaded/deleted directly on an active order without going through
+ * the draft edit cycle. They are removed with the order (see service).
+ */
+entity Attachments : cuid, managed {
+  order     : Association to SalesOrders not null;
+  @Core.MediaType: mediaType
+  @Core.ContentDisposition.Filename: fileName
+  @Core.ContentDisposition.Type: 'attachment'
+  content   : LargeBinary;
+  @Core.IsMediaType
+  mediaType : String(127) default 'application/octet-stream';
+  fileName  : String(255) not null;
+  size      : Integer;
+  note      : String(500);
 }

@@ -4,11 +4,12 @@
   xmlns="sap.m"
   xmlns:core="sap.ui.core"
   xmlns:f="sap.ui.layout.form"
+  xmlns:u="sap.ui.unified"
   height="100%">
   <NavContainer id="ordersNavContainer">
     <pages>
 
-      <Page id="ordersListPage" title="{i18n>tabOrders}" enableScrolling="true">
+      <Page id="ordersListPage" title="{i18n>tabOrders}">
         <headerContent>
           <Button icon="sap-icon://refresh" tooltip="{i18n>refresh}" press="onRefreshOrders"/>
         </headerContent>
@@ -52,7 +53,7 @@
         </content>
       </Page>
 
-      <Page id="orderDetailPage" title="{i18n>orderDetails}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
+      <Page id="orderDetailPage" title="{i18n>orderDetails}" showNavButton="true" navButtonPress="onNavBack">
         <content>
           <MessageStrip
             text="{i18n>editingDraftHint}"
@@ -73,7 +74,7 @@
             <Button text="{i18n>delete}" icon="sap-icon://delete" press="onDeleteOrderDetail" visible="{= !${ui>/editing} }"/>
           </Toolbar>
 
-          <f:SimpleForm editable="{ui>/editing}" layout="ResponsiveGridLayout" class="sapUiSmallMargin">
+          <f:SimpleForm editable="{ui>/editing}" class="sapUiSmallMargin">
             <Label text="{i18n>orderNo}"/>
             <Text text="{orderNo}"/>
             <Label text="{i18n>status}"/>
@@ -95,7 +96,7 @@
               <core:Item key="{code}" text="{name}"/>
             </ComboBox>
             <Label text="{i18n>note}"/>
-            <TextArea value="{note}" rows="2" width="100%" editable="{ui>/editing}"/>
+            <TextArea value="{note}" width="100%" editable="{ui>/editing}"/>
             <Label text="{i18n>totalAmount}"/>
             <ObjectNumber number="{totalAmount}" unit="{currency_code}"/>
           </f:SimpleForm>
@@ -121,6 +122,47 @@
                   <ObjectNumber number="{unitPrice}" unit="{product/currency_code}"/>
                   <ObjectNumber number="{netAmount}" unit="{product/currency_code}"/>
                   <Button icon="sap-icon://delete" type="Transparent" press="onRemoveDraftItem" visible="{ui>/editing}"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+
+          <Toolbar class="sapUiSmallMarginTop">
+            <Title text="{i18n>attachments}"/>
+            <ToolbarSpacer/>
+            <u:FileUploader
+              id="attachmentUploader"
+              buttonOnly="true"
+              buttonText="{i18n>uploadAttachment}"
+              icon="sap-icon://upload"
+              sameFilenameAllowed="true"
+              maximumFileSize="10"
+              fileSizeExceed="onAttachmentTooLarge"
+              change="onAttachmentSelected"
+              enabled="{= !${ui>/uploading} }"/>
+          </Toolbar>
+          <Table
+            id="attachmentsTable"
+            busy="{ui>/uploading}"
+            items="{path: '/Attachments', suspended: true, parameters: {$select: 'ID,fileName,mediaType,size,createdAt,createdBy', $orderby: 'createdAt desc'}}"
+            noDataText="{i18n>noAttachments}">
+            <columns>
+              <Column><Text text="{i18n>fileName}"/></Column>
+              <Column minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>fileType}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>fileSize}"/></Column>
+              <Column minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>uploadedBy}"/></Column>
+              <Column minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>uploadedAt}"/></Column>
+              <Column hAlign="End" width="4rem"/>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <Link text="{fileName}" href="{path: 'ID', formatter: '.attachmentUrl'}" target="_blank"/>
+                  <Text text="{mediaType}"/>
+                  <Text text="{path: 'size', formatter: '.formatter.fileSize'}"/>
+                  <Text text="{createdBy}"/>
+                  <Text text="{path: 'createdAt', type: 'sap.ui.model.odata.type.DateTimeOffset'}"/>
+                  <Button icon="sap-icon://delete" type="Transparent" tooltip="{i18n>delete}" press="onDeleteAttachment"/>
                 </cells>
               </ColumnListItem>
             </items>

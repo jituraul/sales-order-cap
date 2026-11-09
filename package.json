@@ -21,7 +21,8 @@
     "chai": "^4",
     "chai-as-promised": "^7",
     "chai-subset": "^1",
-    "jest": "^29"
+    "jest": "^29",
+    "mbt": "^1.2.50"
   },
   "scripts": {
     "start": "cds-serve",
@@ -48,6 +49,12 @@
         "db": "hana",
         "auth": "xsuaa"
       }
+    }
+  },
+  "ui5": {
+    "ui5linter": {
+      "idNamingPattern": "^[a-z][a-zA-Z0-9]*$",
+      "eventNamingPattern": "^on[A-Z][a-zA-Z0-9]*$"
     }
   }
 }

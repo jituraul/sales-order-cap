@@ -7,7 +7,7 @@ const cds = require('@sap/cds');
  */
 module.exports = class SalesService extends cds.ApplicationService {
   async init() {
-    const { SalesOrders, OrderItems, Products } = this.entities;
+    const { SalesOrders, OrderItems, Products, Attachments } = this.entities;
 
     // ---------------------------------------------------------------
     // Helpers
@@ -96,6 +96,30 @@ module.exports = class SalesService extends cds.ApplicationService {
     this.after(['CREATE', 'UPDATE', 'DELETE'], OrderItems, async (_, req) => {
       const orderID = req.data?.order_ID;
       if (orderID) await recalcOrderTotal(orderID);
+    });
+
+    // ---------------------------------------------------------------
+    // ATTACHMENTS
+    // ---------------------------------------------------------------
+
+    const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MB
+
+    this.before('CREATE', Attachments, async (req) => {
+      const { order_ID, fileName } = req.data;
+      if (!fileName) return req.error(400, 'fileName is required');
+      if (req.data.size != null && req.data.size > MAX_ATTACHMENT_BYTES) {
+        return req.error(413, 'Attachment exceeds the 10 MB limit');
+      }
+      const order = await SELECT.one.from(SalesOrders).columns('ID').where({ ID: order_ID });
+      if (!order) return req.error(404, `Order ${order_ID} not found`);
+    });
+
+    // Attachments belong to the order: remove them when the active order is
+    // deleted. (Discarding a draft must not touch them, hence the guard.)
+    this.before('DELETE', SalesOrders, async (req) => {
+      if (req.target.name.endsWith('.drafts')) return;
+      const ID = req.data?.ID ?? req.params?.[0]?.ID ?? req.params?.[0];
+      if (ID) await DELETE.from(Attachments).where({ order_ID: ID });
     });
 
     // ---------------------------------------------------------------

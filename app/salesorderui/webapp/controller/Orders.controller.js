@@ -19,7 +19,8 @@ sap.ui.define([
       this.getView().setModel(new JSONModel({
         editing: false,
         selectedOrder: null,
-        busy: false
+        busy: false,
+        uploading: false
       }), "ui");
 
       var vBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -78,6 +79,7 @@ sap.ui.define([
       var oUi = this.getView().getModel("ui");
       oUi.setProperty("/editing", false);
       this.byId("orderDetailPage").setBindingContext(oContext);
+      this._bindAttachments(oContext.getProperty("ID"));
       this.byId("ordersNavContainer").to(this.byId("orderDetailPage"));
     },
 
@@ -417,6 +419,116 @@ sap.ui.define([
         MessageToast.show(this._i18n("orderSaved"));
         this.byId("ordersTable").getBinding("items").refresh();
       }.bind(this)).catch(this._error.bind(this));
+    },
+
+    // ---------------------------------------------------------------
+    // Attachments
+    // Attachments hang off the order ID (same for draft and active), so they
+    // can be managed at any time, independent of the draft edit cycle.
+    // Upload = POST metadata row, then PUT the binary to .../content.
+    // ---------------------------------------------------------------
+
+    _bindAttachments: function (sOrderID) {
+      this._sAttachmentOrderID = sOrderID;
+      var oBinding = this.byId("attachmentsTable").getBinding("items");
+      oBinding.filter(new Filter("order_ID", FilterOperator.EQ, sOrderID));
+      if (oBinding.isSuspended()) {
+        oBinding.resume();
+      }
+    },
+
+    attachmentUrl: function (sID) {
+      if (!sID) { return ""; }
+      return this.getView().getModel().getServiceUrl() + "Attachments(" + sID + ")/content";
+    },
+
+    onAttachmentTooLarge: function () {
+      MessageBox.error(this._i18n("attachmentTooLarge"));
+    },
+
+    onAttachmentSelected: function (oEvent) {
+      var aFiles = oEvent.getParameter("files");
+      var oFile = aFiles && aFiles[0];
+      var oUploader = this.byId("attachmentUploader");
+      if (!oFile || !this._sAttachmentOrderID) { return; }
+      if (oFile.size > 10 * 1024 * 1024) {
+        oUploader.clear();
+        this.onAttachmentTooLarge();
+        return;
+      }
+
+      var oUi = this.getView().getModel("ui");
+      var oBinding = this.byId("attachmentsTable").getBinding("items");
+      var sMediaType = oFile.type || "application/octet-stream";
+      oUi.setProperty("/uploading", true);
+
+      var oNewContext = oBinding.create({
+        order_ID: this._sAttachmentOrderID,
+        fileName: oFile.name,
+        mediaType: sMediaType,
+        size: oFile.size
+      }, true);
+
+      oNewContext.created()
+        .then(function () {
+          return this._uploadContent(oNewContext.getProperty("ID"), oFile, sMediaType)
+            .catch(function (e) {
+              // Don't leave an empty metadata row behind.
+              return oNewContext.delete().catch(function () {}).then(function () { throw e; });
+            });
+        }.bind(this))
+        .then(function () {
+          MessageToast.show(this._i18n("attachmentUploaded"));
+          return oBinding.refresh();
+        }.bind(this))
+        .catch(this._error.bind(this))
+        .finally(function () {
+          oUploader.clear();
+          oUi.setProperty("/uploading", false);
+        });
+    },
+
+    _uploadContent: function (sID, oFile, sMediaType) {
+      var sUrl = this.attachmentUrl(sID);
+      return this._getCsrfToken().then(function (sToken) {
+        var mHeaders = { "Content-Type": sMediaType };
+        if (sToken) { mHeaders["X-CSRF-Token"] = sToken; }
+        return fetch(sUrl, { method: "PUT", headers: mHeaders, body: oFile, credentials: "same-origin" });
+      }).then(function (oResponse) {
+        if (!oResponse.ok) {
+          return oResponse.text().then(function (sText) {
+            var sMsg = sText;
+            try { sMsg = JSON.parse(sText).error.message; } catch (e) { /* plain text */ }
+            throw new Error(sMsg || oResponse.statusText);
+          });
+        }
+      });
+    },
+
+    _getCsrfToken: function () {
+      var oModel = this.getView().getModel();
+      var sToken = oModel.getHttpHeaders()["X-CSRF-Token"];
+      if (sToken) { return Promise.resolve(sToken); }
+      return fetch(oModel.getServiceUrl(), {
+        method: "HEAD",
+        headers: { "X-CSRF-Token": "Fetch" },
+        credentials: "same-origin"
+      }).then(function (oResponse) {
+        return oResponse.headers.get("X-CSRF-Token");
+      }).catch(function () { return null; });
+    },
+
+    onDeleteAttachment: function (oEvent) {
+      /** @type {sap.ui.model.odata.v4.Context} */
+      var oContext = oEvent.getSource().getBindingContext();
+      MessageBox.confirm(this._i18n("confirmDeleteAttachment"), {
+        onClose: function (sAction) {
+          if (sAction !== MessageBox.Action.OK) { return; }
+          oContext.delete().then(function () {
+            MessageToast.show(this._i18n("attachmentDeleted"));
+          }.bind(this)).catch(this._error.bind(this));
+        }.bind(this)
+      });
     },
 
     // ---------------------------------------------------------------
